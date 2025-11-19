@@ -1,5 +1,5 @@
 /******************************************************
- *  app.js — VERSION FINALE AVEC FIREBASE FIRESTORE
+ *  app.js — VERSION FINALE AVEC CODE JOUEUR SÉCURISÉ
  ******************************************************/
 
 // ---------- IMPORTS FIREBASE (CDN) ----------
@@ -25,22 +25,21 @@ const firebaseConfig = {
   measurementId: "G-SDP7VH0MDG"
 };
 
-// Initialisation Firebase + Firestore
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 // ---------- CONFIG DU JEU ----------
 const PHOTO_COUNT = 36;
-const ADMIN_CODE = "1234"; // à changer pour toi
+const ADMIN_CODE = "1234"; // ← change le code admin ici
 
-// Liste des photos (adapte les chemins si besoin)
+// Liste des photos
 const PHOTOS = Array.from({ length: PHOTO_COUNT }, (_, i) => {
   const id = i + 1;
   return {
     id,
     heroUrl: `img/hero-${id}.jpg`,
     realUrl: `img/real-${id}.jpg`,
-    answer: "" // tu pourras mettre la bonne réponse pour le classement
+    answer: "" // tu complèteras pour le classement
   };
 });
 
@@ -59,20 +58,32 @@ function showScreen(id) {
 }
 
 // ---------- API FIRESTORE ----------
-async function ensurePlayer(name) {
+
+// 🎯 Nouveau : création / login sécurisé
+async function ensurePlayer(name, code) {
   const id = slugifyName(name);
   const ref = doc(db, "players", id);
   const snap = await getDoc(ref);
 
   if (!snap.exists()) {
+    // 🆕 Création d’un nouveau joueur avec son code unique
     await setDoc(ref, {
       id,
       name,
+      code,              // on stocke le code joueur
       createdAt: serverTimestamp()
     });
+    return { id, name };
   }
 
-  return { id, name };
+  const data = snap.data();
+
+  // 🔐 Vérification du code joueur
+  if (data.code !== code) {
+    throw new Error("INVALID_CODE");
+  }
+
+  return { id, name: data.name };
 }
 
 async function loadAnswer(playerId, photoId) {
@@ -101,6 +112,7 @@ async function loadAllGuesses() {
 // ---------- DOM ----------
 const loginButton = document.getElementById("login-button");
 const playerNameInput = document.getElementById("player-name-input");
+const playerCodeInput = document.getElementById("player-code-input");
 const playerNameDisplay = document.getElementById("player-name-display");
 const photoGrid = document.getElementById("photo-grid");
 const answerInput = document.getElementById("answer-input");
@@ -128,14 +140,24 @@ let currentPhotoId = null;
 // ---------- LOGIQUE UTILISATEUR ----------
 loginButton.addEventListener("click", async () => {
   const name = playerNameInput.value.trim();
-  if (!name) {
-    alert("Merci d'entrer un nom");
+  const code = playerCodeInput.value.trim();
+
+  if (!name) return alert("Merci d'entrer un nom");
+  if (!code) return alert("Merci d'entrer ton code joueur");
+
+  try {
+    currentPlayer = await ensurePlayer(name, code);
+  } catch (e) {
+    if (e.message === "INVALID_CODE") {
+      alert("Code incorrect pour ce joueur !");
+      return;
+    }
+    console.error(e);
+    alert("Erreur de connexion au jeu.");
     return;
   }
 
-  currentPlayer = await ensurePlayer(name);
   playerNameDisplay.textContent = currentPlayer.name;
-
   await renderPhotoGrid();
   showScreen("menu-screen");
 });
@@ -170,7 +192,6 @@ async function openPhoto(id) {
   answerInput.value = g?.answer || "";
 
   saveStatus.textContent = "";
-  saveStatus.className = "status-message";
   showScreen("guess-screen");
 }
 
@@ -181,7 +202,6 @@ saveAnswerButton.addEventListener("click", async () => {
   await saveAnswer(currentPlayer, currentPhotoId, ans);
 
   saveStatus.textContent = "Réponse enregistrée ✔️";
-  saveStatus.classList.add("ok");
 
   await renderPhotoGrid();
 });
@@ -199,14 +219,12 @@ adminBackButton.addEventListener("click", () => showScreen("menu-screen"));
 
 adminLoginButton.addEventListener("click", async () => {
   if (adminCodeInput.value !== ADMIN_CODE) {
-    adminLoginStatus.textContent = "Code incorrect.";
+    adminLoginStatus.textContent = "Code organisateur incorrect.";
     adminLoginStatus.classList.add("error");
     return;
   }
 
-  adminLoginStatus.textContent = "Connexion réussie ! Chargement...";
-  adminLoginStatus.classList.add("ok");
-
+  adminLoginStatus.textContent = "Connexion réussie, chargement...";
   const guesses = await loadAllGuesses();
   buildRanking(guesses);
   adminResultsArea.classList.remove("hidden");
@@ -234,10 +252,9 @@ function buildRanking(guesses) {
     const correct = correctMap.get(String(g.photoId)) || "";
     const given = normalize(g.answer);
 
-    if (correct) player.total += 1;
-    const isCorrect = correct && correct === given;
-
-    if (isCorrect) player.score += 1;
+    if (correct) player.total++;
+    const isCorrect = correct && given === correct;
+    if (isCorrect) player.score++;
 
     player.details.push({
       photoId: g.photoId,
@@ -256,7 +273,7 @@ function buildRanking(guesses) {
       <td>${i + 1}</td>
       <td>${p.name}</td>
       <td>${p.score}/${p.total}</td>
-      <td>Voir détails plus bas</td>
+      <td>Voir détails</td>
     `;
     rankingTableBody.appendChild(tr);
   });
@@ -267,7 +284,7 @@ function buildRanking(guesses) {
     p.details.forEach(d => {
       lines.push(
         `<li>Photo ${d.photoId} : "${d.answer}" — ${
-          d.isCorrect ? "✔️" : (d.rightAnswer ? "❌ (réponse : " + d.rightAnswer + ")" : "❌")
+          d.isCorrect ? "✔️" : d.rightAnswer ? `❌ (réponse : ${d.rightAnswer})` : "❌"
         }</li>`
       );
     });
