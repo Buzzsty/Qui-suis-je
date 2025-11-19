@@ -1,48 +1,9 @@
-// app.js
-// SCRIPT EN MODE MODULE
+/******************************************************
+ *  app.js — VERSION FINALE AVEC FIREBASE FIRESTORE
+ ******************************************************/
 
-// ---------- CONFIG GÉNÉRALE ----------
-
-// Nombre de photos dans le jeu
-const PHOTO_COUNT = 36;
-
-// Code organisateur (à changer !)
-const ADMIN_CODE = "MON_CODE_SECRET";
-
-// Tableau des photos : à personnaliser
-// Par défaut, on suppose des fichiers : img/hero-1.jpg, img/real-1.jpg, etc.
-const PHOTOS = Array.from({ length: PHOTO_COUNT }, (_, i) => {
-  const id = i + 1;
-  return {
-    id,
-    heroUrl: `img/hero-${id}.jpg`,   // À adapter selon tes noms/chemins
-    realUrl: `img/real-${id}.jpg`,   // idem
-    answer: ""                       // À remplir : "Prénom Nom"
-  };
-});
-
-// Exemple pour remplir quelques réponses :
-// PHOTOS[0].answer = "Emma";
-// PHOTOS[1].answer = "Lucas";
-
-// ---------- FIREBASE ----------
-
-// 1) Crée un projet sur https://console.firebase.google.com
-// 2) Active Firestore Database
-// 3) Récupère la config web (dans Paramètres du projet > Configurations)
-// 4) Remplace l'objet ci-dessous par le tien
-
-const firebaseConfig = {
-  apiKey: "A_REMPLACER",
-  authDomain: "A_REMPLACER",
-  projectId: "A_REMPLACER",
-  storageBucket: "A_REMPLACER",
-  messagingSenderId: "A_REMPLACER",
-  appId: "A_REMPLACER"
-};
-
-// Import des modules Firebase (version CDN)
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+// ---------- IMPORTS FIREBASE (CDN) ----------
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
 import {
   getFirestore,
   doc,
@@ -51,35 +12,45 @@ import {
   getDocs,
   collection,
   serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+} from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
 
+// ---------- CONFIG FIREBASE (TA CONFIG) ----------
+const firebaseConfig = {
+  apiKey: "AIzaSyA3UEPy4BGPw0iKiSSTzuGE-z14PzAvAp4",
+  authDomain: "qui-suis-je-bbe49.firebaseapp.com",
+  projectId: "qui-suis-je-bbe49",
+  storageBucket: "qui-suis-je-bbe49.firebasestorage.app",
+  messagingSenderId: "546376799946",
+  appId: "1:546376799946:web:c27d83e1099c61056a4633",
+  measurementId: "G-SDP7VH0MDG"
+};
+
+// Initialisation Firebase + Firestore
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-const PLAYERS_COLLECTION = "players";
-const GUESSES_COLLECTION = "guesses";
+// ---------- CONFIG DU JEU ----------
+const PHOTO_COUNT = 36;
+const ADMIN_CODE = "1234"; // change-moi
 
-// ---------- ÉTAT LOCAL ----------
+// Liste des photos (adapte les chemins si besoin)
+const PHOTOS = Array.from({ length: PHOTO_COUNT }, (_, i) => {
+  const id = i + 1;
+  return {
+    id,
+    heroUrl: `img/hero-${id}.jpg`,
+    realUrl: `img/real-${id}.jpg`,
+    answer: "" // ICI tu mettras les bonnes réponses ex: "Emma"
+  };
+});
 
-let currentPlayer = null;   // { id, name }
-let currentPhotoId = null;
-
-// ---------- UTILITAIRES ----------
-
+// ---------- OUTILS ----------
 function slugifyName(name) {
-  return name
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, "-")
-    .replace(/[^a-z0-9-]/g, "");
+  return name.trim().toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
 }
 
 function normalize(str) {
-  return (str || "")
-    .toString()
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, " ");
+  return (str || "").trim().toLowerCase().replace(/\s+/g, " ");
 }
 
 function showScreen(id) {
@@ -87,26 +58,59 @@ function showScreen(id) {
   document.getElementById(id).classList.remove("hidden");
 }
 
+// ---------- API FIRESTORE ----------
+async function ensurePlayer(name) {
+  const id = slugifyName(name);
+  const ref = doc(db, "players", id);
+  const snap = await getDoc(ref);
+
+  if (!snap.exists()) {
+    await setDoc(ref, {
+      id,
+      name,
+      createdAt: serverTimestamp()
+    });
+  }
+
+  return { id, name };
+}
+
+async function loadAnswer(playerId, photoId) {
+  const ref = doc(db, "guesses", `${playerId}_${photoId}`);
+  const snap = await getDoc(ref);
+  return snap.exists() ? snap.data() : null;
+}
+
+async function saveAnswer(player, photoId, answer) {
+  const ref = doc(db, "guesses", `${player.id}_${photoId}`);
+  await setDoc(ref, {
+    id: `${player.id}_${photoId}`,
+    playerId: player.id,
+    playerName: player.name,
+    photoId,
+    answer: answer.trim(),
+    updatedAt: serverTimestamp()
+  });
+}
+
+async function loadAllGuesses() {
+  const snapshot = await getDocs(collection(db, "guesses"));
+  return snapshot.docs.map(d => d.data());
+}
+
 // ---------- DOM ----------
-
-const loginScreen = document.getElementById("login-screen");
-const menuScreen = document.getElementById("menu-screen");
-const guessScreen = document.getElementById("guess-screen");
-const adminScreen = document.getElementById("admin-screen");
-
-const playerNameInput = document.getElementById("player-name-input");
 const loginButton = document.getElementById("login-button");
+const playerNameInput = document.getElementById("player-name-input");
 const playerNameDisplay = document.getElementById("player-name-display");
-const logoutButton = document.getElementById("logout-button");
-
 const photoGrid = document.getElementById("photo-grid");
-const backToMenuButton = document.getElementById("back-to-menu-button");
-const currentPhotoIdSpan = document.getElementById("current-photo-id");
-const heroImage = document.getElementById("hero-image");
-const realImage = document.getElementById("real-image");
 const answerInput = document.getElementById("answer-input");
 const saveAnswerButton = document.getElementById("save-answer-button");
 const saveStatus = document.getElementById("save-status");
+const heroImage = document.getElementById("hero-image");
+const realImage = document.getElementById("real-image");
+const currentPhotoIdSpan = document.getElementById("current-photo-id");
+const backToMenuButton = document.getElementById("back-to-menu-button");
+const logoutButton = document.getElementById("logout-button");
 
 const adminOpenButton = document.getElementById("admin-open-button");
 const adminBackButton = document.getElementById("admin-back-button");
@@ -117,248 +121,153 @@ const adminResultsArea = document.getElementById("admin-results-area");
 const rankingTableBody = document.querySelector("#ranking-table tbody");
 const answersDetailDiv = document.getElementById("answers-detail");
 
-// ---------- FONCTIONS FIRESTORE ----------
+// ---------- ÉTAT ----------
+let currentPlayer = null;
+let currentPhotoId = null;
 
-async function ensurePlayer(name) {
-  const id = slugifyName(name);
-  const ref = doc(db, PLAYERS_COLLECTION, id);
-  const snapshot = await getDoc(ref);
-  if (!snapshot.exists()) {
-    await setDoc(ref, {
-      id,
-      name: name.trim(),
-      createdAt: serverTimestamp()
-    });
-  }
-  return { id, name: name.trim() };
-}
+// ---------- LOGIQUE UTILISATEUR ----------
+loginButton.addEventListener("click", async () => {
+  const name = playerNameInput.value.trim();
+  if (!name) return alert("Merci d'entrer un nom");
 
-async function loadAnswer(playerId, photoId) {
-  const guessId = `${playerId}_${photoId}`;
-  const ref = doc(db, GUESSES_COLLECTION, guessId);
-  const snapshot = await getDoc(ref);
-  if (!snapshot.exists()) return null;
-  return snapshot.data();
-}
+  currentPlayer = await ensurePlayer(name);
+  playerNameDisplay.textContent = currentPlayer.name;
 
-async function saveAnswer(player, photoId, answer) {
-  const guessId = `${player.id}_${photoId}`;
-  const ref = doc(db, GUESSES_COLLECTION, guessId);
-  await setDoc(ref, {
-    id: guessId,
-    playerId: player.id,
-    playerName: player.name,
-    photoId,
-    answer: answer.trim(),
-    updatedAt: serverTimestamp()
-  });
-}
-
-async function loadAllGuesses() {
-  const ref = collection(db, GUESSES_COLLECTION);
-  const snapshot = await getDocs(ref);
-  const results = [];
-  snapshot.forEach(docSnap => results.push(docSnap.data()));
-  return results;
-}
-
-// ---------- UI / LOGIQUE DU JEU ----------
-
-async function handleLogin() {
-  const name = playerNameInput.value;
-  if (!name || !name.trim()) {
-    alert("Merci d'entrer un prénom / nom.");
-    return;
-  }
-  const player = await ensurePlayer(name);
-  currentPlayer = player;
-  playerNameDisplay.textContent = player.name;
-  playerNameInput.value = "";
   await renderPhotoGrid();
   showScreen("menu-screen");
-}
+});
 
 async function renderPhotoGrid() {
   photoGrid.innerHTML = "";
-  if (!currentPlayer) return;
+  const guesses = await loadAllGuesses();
 
-  // On charge tous les guesses pour ce joueur pour marquer ceux déjà répondus.
-  const allGuesses = await loadAllGuesses();
-  const answeredSet = new Set(
-    allGuesses
-      .filter(g => g.playerId === currentPlayer.id && g.answer && g.answer.trim())
-      .map(g => Number(g.photoId))
+  const answered = new Set(
+    guesses.filter(g => g.playerId === currentPlayer.id).map(g => Number(g.photoId))
   );
 
-  PHOTOS.forEach(photo => {
+  PHOTOS.forEach(p => {
     const btn = document.createElement("button");
+    btn.textContent = p.id;
     btn.className = "photo-button";
-    if (answeredSet.has(photo.id)) {
-      btn.classList.add("answered");
-    }
-    btn.textContent = photo.id;
-    btn.addEventListener("click", () => openPhoto(photo.id));
+    if (answered.has(p.id)) btn.classList.add("answered");
+    btn.onclick = () => openPhoto(p.id);
     photoGrid.appendChild(btn);
   });
 }
 
-async function openPhoto(photoId) {
-  currentPhotoId = photoId;
-  const photo = PHOTOS.find(p => p.id === photoId);
-  currentPhotoIdSpan.textContent = photoId;
-  heroImage.src = photo.heroUrl;
-  realImage.src = photo.realUrl;
+async function openPhoto(id) {
+  currentPhotoId = id;
+  const p = PHOTOS.find(x => x.id === id);
+
+  heroImage.src = p.heroUrl;
+  realImage.src = p.realUrl;
+  currentPhotoIdSpan.textContent = id;
+
+  const g = await loadAnswer(currentPlayer.id, id);
+  answerInput.value = g?.answer || "";
 
   saveStatus.textContent = "";
-
-  if (currentPlayer) {
-    const guess = await loadAnswer(currentPlayer.id, photoId);
-    answerInput.value = guess && guess.answer ? guess.answer : "";
-  } else {
-    answerInput.value = "";
-  }
-
+  saveStatus.className = "status-message";
   showScreen("guess-screen");
 }
 
-async function handleSaveAnswer() {
-  if (!currentPlayer || !currentPhotoId) return;
-  const text = answerInput.value || "";
+saveAnswerButton.addEventListener("click", async () => {
+  const ans = answerInput.value.trim();
   saveStatus.textContent = "Enregistrement...";
-  saveStatus.className = "status-message";
 
-  try {
-    await saveAnswer(currentPlayer, currentPhotoId, text);
-    saveStatus.textContent = "Réponse enregistrée ✅";
-    saveStatus.classList.add("ok");
-    // Mettre à jour la grille quand on revient
-    await renderPhotoGrid();
-  } catch (e) {
-    console.error(e);
-    saveStatus.textContent = "Erreur lors de l'enregistrement ❌";
-    saveStatus.classList.add("error");
-  }
-}
+  await saveAnswer(currentPlayer, currentPhotoId, ans);
 
-function handleLogout() {
+  saveStatus.textContent = "Réponse enregistrée ✔️";
+  saveStatus.classList.add("ok");
+
+  await renderPhotoGrid();
+});
+
+// ---------- RETOUR & LOGOUT ----------
+backToMenuButton.addEventListener("click", () => showScreen("menu-screen"));
+logoutButton.addEventListener("click", () => {
   currentPlayer = null;
-  currentPhotoId = null;
-  playerNameDisplay.textContent = "";
   showScreen("login-screen");
-}
+});
 
 // ---------- MODE ORGANISATEUR ----------
+adminOpenButton.addEventListener("click", () => showScreen("admin-screen"));
+adminBackButton.addEventListener("click", () => showScreen("menu-screen"));
 
-function openAdminScreen() {
-  showScreen("admin-screen");
-}
-
-function backFromAdmin() {
-  showScreen(currentPlayer ? "menu-screen" : "login-screen");
-}
-
-async function handleAdminLogin() {
-  adminLoginStatus.textContent = "";
-  adminLoginStatus.className = "status-message";
-
-  const code = adminCodeInput.value;
-  if (code !== ADMIN_CODE) {
+adminLoginButton.addEventListener("click", async () => {
+  if (adminCodeInput.value !== ADMIN_CODE) {
     adminLoginStatus.textContent = "Code incorrect.";
     adminLoginStatus.classList.add("error");
     return;
   }
 
-  adminLoginStatus.textContent = "Connexion réussie, chargement des résultats...";
+  adminLoginStatus.textContent = "Connexion réussie ! Chargement...";
   adminLoginStatus.classList.add("ok");
 
-  try {
-    const guesses = await loadAllGuesses();
-    buildAndRenderRanking(guesses);
-    adminResultsArea.classList.remove("hidden");
-  } catch (e) {
-    console.error(e);
-    adminLoginStatus.textContent = "Erreur lors du chargement des résultats.";
-    adminLoginStatus.classList.add("error");
-  }
-}
+  const guesses = await loadAllGuesses();
+  buildRanking(guesses);
+  adminResultsArea.classList.remove("hidden");
+});
 
-function buildAndRenderRanking(guesses) {
-  // Prépare une map photoId -> bonne réponse normalisée
-  const correctByPhotoId = new Map();
+function buildRanking(guesses) {
+  // bonnes réponses
+  const correctMap = new Map();
   PHOTOS.forEach(p => {
-    if (p.answer && p.answer.trim()) {
-      correctByPhotoId.set(String(p.id), normalize(p.answer));
-    }
+    if (p.answer) correctMap.set(String(p.id), normalize(p.answer));
   });
 
-  const players = {}; // playerId -> { name, score, total, details: [] }
+  const players = {};
 
   guesses.forEach(g => {
-    const pid = g.playerId;
-    if (!players[pid]) {
-      players[pid] = {
-        name: g.playerName || pid,
+    if (!players[g.playerId]) {
+      players[g.playerId] = {
+        name: g.playerName,
         score: 0,
         total: 0,
         details: []
       };
     }
-    const player = players[pid];
 
-    const photoIdStr = String(g.photoId);
-    const correctNorm = correctByPhotoId.get(photoIdStr) || "";
-    const givenNorm = normalize(g.answer);
-    let isCorrect = false;
+    const player = players[g.playerId];
+    const correct = correctMap.get(String(g.photoId)) || "";
+    const given = normalize(g.answer);
 
-    if (correctNorm) {
-      player.total += 1;
-      if (givenNorm === correctNorm) {
-        isCorrect = true;
-        player.score += 1;
-      }
-    }
+    if (correct) player.total += 1;
+    const isCorrect = correct && correct === given;
+
+    if (isCorrect) player.score += 1;
 
     player.details.push({
       photoId: g.photoId,
       answer: g.answer,
-      correct: isCorrect,
-      correctAnswer: PHOTOS.find(p => p.id === Number(g.photoId))?.answer || ""
+      rightAnswer: correct,
+      isCorrect
     });
   });
 
-  // Transformer en tableau + tri par score
-  const ranking = Object.values(players).sort((a, b) => {
-    if (b.score !== a.score) return b.score - a.score;
-    return a.name.localeCompare(b.name);
-  });
+  const ranking = Object.values(players).sort((a, b) => b.score - a.score);
 
-  // Rendu tableau classement
   rankingTableBody.innerHTML = "";
-  ranking.forEach((p, index) => {
+  ranking.forEach((p, i) => {
     const tr = document.createElement("tr");
-    const ratio = p.total > 0 ? `${p.score}/${p.total}` : `${p.score}`;
     tr.innerHTML = `
-      <td>${index + 1}</td>
+      <td>${i + 1}</td>
       <td>${p.name}</td>
-      <td>${ratio}</td>
-      <td>Voir détails plus bas</td>
+      <td>${p.score}/${p.total}</td>
+      <td>Voir détails</td>
     `;
     rankingTableBody.appendChild(tr);
   });
 
-  // Rendu détails
   const lines = [];
   ranking.forEach(p => {
-    lines.push(`<h4>${p.name} – Score : ${p.score}/${p.total}</h4>`);
-    if (p.details.length === 0) {
-      lines.push(`<p>Aucune réponse.</p>`);
-      return;
-    }
-    lines.push("<ul>");
+    lines.push(`<h4>${p.name} — ${p.score}/${p.total}</h4><ul>`);
     p.details.forEach(d => {
-      const status = d.correct ? "✅" : "❌";
-      const correctText = d.correctAnswer ? ` (Bonne réponse : ${d.correctAnswer})` : "";
-      lines.push(`<li>Photo ${d.photoId} : "${d.answer || "-"}" ${status}${correctText}</li>`);
+      lines.push(
+        `<li>Photo ${d.photoId} : "${d.answer}" — ${
+          d.isCorrect ? "✔️" : "❌ (réponse : " + d.rightAnswer + ")"
+        }</li>`
+      );
     });
     lines.push("</ul>");
   });
@@ -366,20 +275,5 @@ function buildAndRenderRanking(guesses) {
   answersDetailDiv.innerHTML = lines.join("");
 }
 
-// ---------- ÉCOUTEURS ----------
-
-loginButton.addEventListener("click", handleLogin);
-playerNameInput.addEventListener("keydown", e => {
-  if (e.key === "Enter") handleLogin();
-});
-
-logoutButton.addEventListener("click", handleLogout);
-backToMenuButton.addEventListener("click", () => showScreen("menu-screen"));
-saveAnswerButton.addEventListener("click", handleSaveAnswer);
-
-adminOpenButton.addEventListener("click", openAdminScreen);
-adminBackButton.addEventListener("click", backFromAdmin);
-adminLoginButton.addEventListener("click", handleAdminLogin);
-
-// Au chargement, on affiche l'écran de login
+// ---------- ÉCRAN DE DÉPART ----------
 showScreen("login-screen");
