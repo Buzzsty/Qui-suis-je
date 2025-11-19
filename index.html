@@ -7,88 +7,79 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="app">
-
-    <!-- ÉCRAN CONNEXION -->
-    <section id="login-screen" class="screen">
-      <h1>Qui suis-je ?</h1>
-      <p>Entre ton prénom / nom pour jouer.</p>
-      <input id="player-name-input" type="text" placeholder="Ex : Emma D." />
-      <button id="login-button">Entrer dans le jeu</button>
-    </section>
-
-    <!-- ÉCRAN CHOIX DES PHOTOS -->
-    <section id="menu-screen" class="screen hidden">
-      <div class="menu-header">
-        <h2>Bienvenue, <span id="player-name-display"></span></h2>
-        <button id="logout-button" class="secondary">Changer de joueur</button>
-      </div>
-
-      <p>Choisis une photo à deviner :</p>
-      <div id="photo-grid" class="photo-grid"></div>
-
-      <div class="admin-link">
-        <button id="admin-open-button" class="link-button">Mode organisateur</button>
-      </div>
-    </section>
-
-    <!-- ÉCRAN DEVINETTE -->
-    <section id="guess-screen" class="screen hidden">
-      <button id="back-to-menu-button" class="secondary">&larr; Retour au choix</button>
-      <h2>Photo n°<span id="current-photo-id"></span></h2>
-
-      <div class="photos-container">
-        <div class="photo-block">
-          <h3>Version super-héros</h3>
-          <img id="hero-image" src="" alt="Photo BD super-héros" />
-        </div>
-        <div class="photo-block">
-          <h3>Photo réelle</h3>
-          <img id="real-image" src="" alt="Photo réelle" />
-        </div>
-      </div>
-
-      <label for="answer-input">Qui est-ce ?</label>
-      <input id="answer-input" type="text" placeholder="Tape le prénom / nom" />
-
-      <button id="save-answer-button">Enregistrer la réponse</button>
-      <p id="save-status" class="status-message"></p>
-    </section>
-
-    <!-- ÉCRAN ADMIN -->
-    <section id="admin-screen" class="screen hidden">
-      <button id="admin-back-button" class="secondary">&larr; Retour au jeu</button>
-      <h2>Espace organisateur</h2>
-
-      <div id="admin-login-area">
-        <p>Entre le code organisateur :</p>
-        <input id="admin-code-input" type="password" />
-        <button id="admin-login-button">Voir les résultats</button>
-        <p id="admin-login-status" class="status-message"></p>
-      </div>
-
-      <div id="admin-results-area" class="hidden">
-        <h3>Classement des participants</h3>
-        <table id="ranking-table">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Joueur</th>
-              <th>Score</th>
-              <th>Détails</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-
-        <h3>Détail des réponses</h3>
-        <div id="answers-detail"></div>
-      </div>
-    </section>
-
+  <!-- Écran connexion joueur -->
+  <div id="login-screen" class="screen">
+    <h1>Qui suis-je ?</h1>
+    <p>Entre ton prénom / nom pour jouer.</p>
+    <input id="player-name-input" type="text" placeholder="Ton prénom / nom" />
+    <button id="login-button">Entrer dans le jeu</button>
   </div>
 
-  <!-- Ton script JS (module pour Firebase) -->
+  <!-- Écran menu (choix des photos) -->
+  <div id="menu-screen" class="screen hidden">
+    <h2>Bienvenue, <span id="player-name-display"></span></h2>
+    <button id="logout-button">Changer de joueur</button>
+
+    <h3>Choisis une photo à deviner :</h3>
+    <div id="photo-grid" class="photo-grid"></div>
+
+    <button id="admin-open-button">Mode organisateur</button>
+  </div>
+
+  <!-- Écran de devinette -->
+  <div id="guess-screen" class="screen hidden">
+    <button id="back-to-menu-button">← Retour au choix</button>
+    <h2>Photo n° <span id="current-photo-id"></span></h2>
+
+    <div class="photo-container">
+      <div class="photo-column">
+        <h3>Version super-héros</h3>
+        <img id="hero-image" alt="Version super-héros" />
+      </div>
+      <div class="photo-column">
+        <h3>Photo réelle</h3>
+        <img id="real-image" alt="Photo réelle" />
+      </div>
+    </div>
+
+    <div class="answer-block">
+      <label for="answer-input">Qui est-ce ?</label>
+      <input id="answer-input" type="text" placeholder="Tape le prénom / nom" />
+      <button id="save-answer-button">Enregistrer la réponse</button>
+      <div id="save-status" class="status-message"></div>
+    </div>
+  </div>
+
+  <!-- Écran organisateur -->
+  <div id="admin-screen" class="screen hidden">
+    <button id="admin-back-button">← Retour au jeu</button>
+
+    <h2>Espace organisateur</h2>
+    <p>Entre le code organisateur :</p>
+    <input id="admin-code-input" type="password" />
+    <button id="admin-login-button">Voir les résultats</button>
+    <div id="admin-login-status" class="status-message"></div>
+
+    <div id="admin-results-area" class="hidden">
+      <h3>Classement des participants</h3>
+      <table id="ranking-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Joueur</th>
+            <th>Score</th>
+            <th>Détails</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+      <h3>Détail des réponses</h3>
+      <div id="answers-detail"></div>
+    </div>
+  </div>
+
+  <!-- Script principal -->
   <script type="module" src="app.js"></script>
 </body>
 </html>
