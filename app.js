@@ -1,6 +1,8 @@
 /******************************************************
- *  app.js — VERSION FINALE AVEC CODE JOUEUR SÉCURISÉ
+ *  app.js — QUI-SUIS-JE BD + FIRESTORE + CODE JOUEUR
  ******************************************************/
+
+console.log("app.js chargé ✅");
 
 // ---------- IMPORTS FIREBASE (CDN) ----------
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
@@ -29,12 +31,12 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 // ---------- CONFIG DU JEU ----------
-const PHOTO_COUNT = 33;
-const ADMIN_CODE = "1234"; // ← change le code admin ici
+const PHOTO_COUNT = 33;           // 33 personnes
+const ADMIN_CODE = "1234";        // à changer
 
-// Liste des photos
+// ---------- LISTE DES PHOTOS (ANIME + ORIGINALE, TOUT EN .png) ----------
 const PHOTOS = [
-  { id: 1,  heroUrl: "img/justine-anime.png",      realUrl: "img/justine-original.png",      answer: "justine" },
+  { id: 1,  heroUrl: "img/justine-anime.png",      realUrl: "img/justine-original.png",      answer: "" },
   { id: 2,  heroUrl: "img/alix-anime.png",         realUrl: "img/alix-original.png",         answer: "" },
   { id: 3,  heroUrl: "img/yannaelle-anime.png",    realUrl: "img/yannaelle-original.png",    answer: "" },
   { id: 4,  heroUrl: "img/anita-anime.png",        realUrl: "img/anita-original.png",        answer: "" },
@@ -66,11 +68,8 @@ const PHOTOS = [
   { id: 30, heroUrl: "img/dani-anime.png",         realUrl: "img/dani-original.png",         answer: "" },
   { id: 31, heroUrl: "img/alex-anime.png",         realUrl: "img/alex-original.png",         answer: "" },
   { id: 32, heroUrl: "img/audrey-anime.png",       realUrl: "img/audrey-original.png",       answer: "" },
-  { id: 33, heroUrl: "img/redha-anime.png",        realUrl: "img/redha-original.png",        answer: "" },
+  { id: 33, heroUrl: "img/redha-anime.png",        realUrl: "img/redha-original.png",        answer: "" }
 ];
-
-  };
-});
 
 // ---------- OUTILS ----------
 function slugifyName(name) {
@@ -88,18 +87,18 @@ function showScreen(id) {
 
 // ---------- API FIRESTORE ----------
 
-// 🎯 Nouveau : création / login sécurisé
+// Création / connexion joueur AVEC code
 async function ensurePlayer(name, code) {
   const id = slugifyName(name);
   const ref = doc(db, "players", id);
   const snap = await getDoc(ref);
 
   if (!snap.exists()) {
-    // 🆕 Création d’un nouveau joueur avec son code unique
+    // 1ère connexion : création joueur avec code
     await setDoc(ref, {
       id,
       name,
-      code,              // on stocke le code joueur
+      code,
       createdAt: serverTimestamp()
     });
     return { id, name };
@@ -107,7 +106,13 @@ async function ensurePlayer(name, code) {
 
   const data = snap.data();
 
-  // 🔐 Vérification du code joueur
+  // Ancien joueur sans code -> on enregistre celui entré
+  if (!data.code) {
+    await setDoc(ref, { ...data, code }, { merge: true });
+    return { id, name: data.name };
+  }
+
+  // Joueur avec code -> on vérifie
   if (data.code !== code) {
     throw new Error("INVALID_CODE");
   }
@@ -171,18 +176,24 @@ loginButton.addEventListener("click", async () => {
   const name = playerNameInput.value.trim();
   const code = playerCodeInput.value.trim();
 
-  if (!name) return alert("Merci d'entrer un nom");
-  if (!code) return alert("Merci d'entrer ton code joueur");
+  if (!name) {
+    alert("Merci d'entrer un nom");
+    return;
+  }
+  if (!code) {
+    alert("Merci d'entrer ton code joueur");
+    return;
+  }
 
   try {
     currentPlayer = await ensurePlayer(name, code);
   } catch (e) {
+    console.error("Erreur login:", e);
     if (e.message === "INVALID_CODE") {
-      alert("Code incorrect pour ce joueur !");
-      return;
+      alert("Code incorrect pour ce joueur.");
+    } else {
+      alert("Erreur de connexion au jeu : " + e.message);
     }
-    console.error(e);
-    alert("Erreur de connexion au jeu.");
     return;
   }
 
