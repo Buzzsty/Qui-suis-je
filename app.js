@@ -29,7 +29,7 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 // ---------- CONFIG DU JEU ----------
-const PHOTO_COUNT = 36;
+const PHOTO_COUNT = 33;
 const ADMIN_CODE = "1234"; // ← change le code admin ici
 
 // Liste des photos
@@ -37,9 +37,9 @@ const PHOTOS = Array.from({ length: PHOTO_COUNT }, (_, i) => {
   const id = i + 1;
   return {
     id,
-    heroUrl: `img/hero-${id}.jpg`,
-    realUrl: `img/real-${id}.jpg`,
-    answer: "" // tu complèteras pour le classement
+    heroUrl: `img/justine-animé-${id}.jpg`,
+    realUrl: `img/justine-original-${id}.jpg`,
+    answer: "justine" // tu complèteras pour le classement
   };
 });
 
