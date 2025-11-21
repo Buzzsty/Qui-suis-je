@@ -7,60 +7,93 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <!-- Écran connexion joueur -->
+  <!-- ÉCRAN 1 : CONNEXION JOUEUR -->
   <div id="login-screen" class="screen">
     <h1>Qui suis-je ?</h1>
-    <p>Entre ton prénom / nom pour jouer.</p>
-    <input id="player-name-input" type="text" placeholder="Ton prénom / nom" />
+    <p>Entre ton prénom / nom et ton code joueur pour jouer.</p>
 
-    <!-- NOUVEAU : code joueur sécurisé -->
-    <input id="player-code-input" type="password" placeholder="Ton code joueur (ex : 1234)" />
+    <input
+      id="player-name-input"
+      type="text"
+      placeholder="Ton prénom / nom"
+      autocomplete="off"
+    />
+
+    <input
+      id="player-code-input"
+      type="password"
+      placeholder="Ton code joueur (ex : 1234)"
+      autocomplete="off"
+    />
 
     <button id="login-button">Entrer dans le jeu</button>
   </div>
 
-  <!-- Écran menu (choix des photos) -->
+  <!-- ÉCRAN 2 : MENU / CHOIX DES PHOTOS -->
   <div id="menu-screen" class="screen hidden">
-    <h2>Bienvenue, <span id="player-name-display"></span></h2>
-    <button id="logout-button">Changer de joueur</button>
+    <div class="menu-header">
+      <h2>Bienvenue, <span id="player-name-display"></span></h2>
+      <button id="logout-button">Changer de joueur</button>
+    </div>
 
     <h3>Choisis une photo à deviner :</h3>
-    <div id="photo-grid" class="photo-grid"></div>
 
-    <button id="admin-open-button">Mode organisateur</button>
+    <div id="photo-grid" class="photo-grid">
+      <!-- boutons 1..33 générés en JS -->
+    </div>
+
+    <div class="admin-shortcut">
+      <button id="admin-open-button">Mode organisateur</button>
+    </div>
   </div>
 
-  <!-- Écran de devinette -->
+  <!-- ÉCRAN 3 : DEVINETTE (2 IMAGES + RÉPONSE AU MILIEU) -->
   <div id="guess-screen" class="screen hidden">
     <button id="back-to-menu-button">← Retour au choix</button>
     <h2>Photo n° <span id="current-photo-id"></span></h2>
 
     <div class="photo-container">
+      <!-- Colonne gauche : super-héros -->
       <div class="photo-column">
         <h3>Version super-héros</h3>
         <img id="hero-image" alt="Version super-héros" />
       </div>
+
+      <!-- Colonne centrale : réponse -->
+      <div class="answer-column">
+        <div class="answer-block">
+          <label for="answer-input">Qui est-ce ?</label>
+          <input
+            id="answer-input"
+            type="text"
+            placeholder="Tape le prénom / nom"
+            autocomplete="off"
+          />
+          <button id="save-answer-button">Enregistrer la réponse</button>
+          <div id="save-status" class="status-message"></div>
+        </div>
+      </div>
+
+      <!-- Colonne droite : photo réelle -->
       <div class="photo-column">
         <h3>Photo réelle</h3>
         <img id="real-image" alt="Photo réelle" />
       </div>
     </div>
-
-    <div class="answer-block">
-      <label for="answer-input">Qui est-ce ?</label>
-      <input id="answer-input" type="text" placeholder="Tape le prénom / nom" />
-      <button id="save-answer-button">Enregistrer la réponse</button>
-      <div id="save-status" class="status-message"></div>
-    </div>
   </div>
 
-  <!-- Écran organisateur -->
+  <!-- ÉCRAN 4 : MODE ORGANISATEUR -->
   <div id="admin-screen" class="screen hidden">
     <button id="admin-back-button">← Retour au jeu</button>
 
     <h2>Espace organisateur</h2>
-    <p>Entre le code organisateur :</p>
-    <input id="admin-code-input" type="password" />
+    <p>Entre le code organisateur pour voir les résultats :</p>
+
+    <input
+      id="admin-code-input"
+      type="password"
+      placeholder="Code organisateur"
+    />
     <button id="admin-login-button">Voir les résultats</button>
     <div id="admin-login-status" class="status-message"></div>
 
@@ -75,15 +108,19 @@
             <th>Détails</th>
           </tr>
         </thead>
-        <tbody></tbody>
+        <tbody>
+          <!-- lignes générées en JS -->
+        </tbody>
       </table>
 
       <h3>Détail des réponses</h3>
-      <div id="answers-detail"></div>
+      <div id="answers-detail">
+        <!-- contenu généré en JS -->
+      </div>
     </div>
   </div>
 
-  <!-- Script principal -->
+  <!-- SCRIPT PRINCIPAL -->
   <script type="module" src="app.js"></script>
 </body>
 </html>
