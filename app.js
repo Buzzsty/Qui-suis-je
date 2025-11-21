@@ -33,13 +33,42 @@ const PHOTO_COUNT = 33;
 const ADMIN_CODE = "1234"; // ← change le code admin ici
 
 // Liste des photos
-const PHOTOS = Array.from({ length: PHOTO_COUNT }, (_, i) => {
-  const id = i + 1;
-  return {
-    id,
-    heroUrl: `img/justine-animé-${id}.jpg`,
-    realUrl: `img/justine-original-${id}.jpg`,
-    answer: "justine" // tu complèteras pour le classement
+const PHOTOS = [
+  { id: 1,  heroUrl: "img/justine-anime.png",      realUrl: "img/justine-original.png",      answer: "justine" },
+  { id: 2,  heroUrl: "img/alix-anime.png",         realUrl: "img/alix-original.png",         answer: "" },
+  { id: 3,  heroUrl: "img/yannaelle-anime.png",    realUrl: "img/yannaelle-original.png",    answer: "" },
+  { id: 4,  heroUrl: "img/anita-anime.png",        realUrl: "img/anita-original.png",        answer: "" },
+  { id: 5,  heroUrl: "img/steven-anime.png",       realUrl: "img/steven-original.png",       answer: "" },
+  { id: 6,  heroUrl: "img/alain-anime.png",        realUrl: "img/alain-original.png",        answer: "" },
+  { id: 7,  heroUrl: "img/marion-anime.png",       realUrl: "img/marion-original.png",       answer: "" },
+  { id: 8,  heroUrl: "img/shaneke-anime.png",      realUrl: "img/shaneke-original.png",      answer: "" },
+  { id: 9,  heroUrl: "img/shirley-anime.png",      realUrl: "img/shirley-original.png",      answer: "" },
+  { id: 10, heroUrl: "img/pierre-louis-anime.png", realUrl: "img/pierre-louis-original.png", answer: "" },
+  { id: 11, heroUrl: "img/patrick-anime.png",      realUrl: "img/patrick-original.png",      answer: "" },
+  { id: 12, heroUrl: "img/solene-anime.png",       realUrl: "img/solene-original.png",       answer: "" },
+  { id: 13, heroUrl: "img/mariej-anime.png",       realUrl: "img/mariej-original.png",       answer: "" },
+  { id: 14, heroUrl: "img/mylaine-anime.png",      realUrl: "img/mylaine-original.png",      answer: "" },
+  { id: 15, heroUrl: "img/alexis-anime.png",       realUrl: "img/alexis-original.png",       answer: "" },
+  { id: 16, heroUrl: "img/marie-anime.png",        realUrl: "img/marie-original.png",        answer: "" },
+  { id: 17, heroUrl: "img/nicolas-anime.png",      realUrl: "img/nicolas-original.png",      answer: "" },
+  { id: 18, heroUrl: "img/valentin-anime.png",     realUrl: "img/valentin-original.png",     answer: "" },
+  { id: 19, heroUrl: "img/elisa-anime.png",        realUrl: "img/elisa-original.png",        answer: "" },
+  { id: 20, heroUrl: "img/floriane-anime.png",     realUrl: "img/floriane-original.png",     answer: "" },
+  { id: 21, heroUrl: "img/loic-anime.png",         realUrl: "img/loic-original.png",         answer: "" },
+  { id: 22, heroUrl: "img/emily-anime.png",        realUrl: "img/emily-original.png",        answer: "" },
+  { id: 23, heroUrl: "img/cindy-anime.png",        realUrl: "img/cindy-original.png",        answer: "" },
+  { id: 24, heroUrl: "img/virginie-anime.png",     realUrl: "img/virginie-original.png",     answer: "" },
+  { id: 25, heroUrl: "img/sylvain-anime.png",      realUrl: "img/sylvain-original.png",      answer: "" },
+  { id: 26, heroUrl: "img/pauline-anime.png",      realUrl: "img/pauline-original.png",      answer: "" },
+  { id: 27, heroUrl: "img/megane-anime.png",       realUrl: "img/megane-original.png",       answer: "" },
+  { id: 28, heroUrl: "img/gabriel-anime.png",      realUrl: "img/gabriel-original.png",      answer: "" },
+  { id: 29, heroUrl: "img/sabrina-anime.png",      realUrl: "img/sabrina-original.png",      answer: "" },
+  { id: 30, heroUrl: "img/dani-anime.png",         realUrl: "img/dani-original.png",         answer: "" },
+  { id: 31, heroUrl: "img/alex-anime.png",         realUrl: "img/alex-original.png",         answer: "" },
+  { id: 32, heroUrl: "img/audrey-anime.png",       realUrl: "img/audrey-original.png",       answer: "" },
+  { id: 33, heroUrl: "img/redha-anime.png",        realUrl: "img/redha-original.png",        answer: "" },
+];
+
   };
 });
 
