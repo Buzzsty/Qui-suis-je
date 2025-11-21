@@ -36,7 +36,7 @@ const ADMIN_CODE = "1234";        // à changer
 
 // ---------- LISTE DES PHOTOS (ANIME + ORIGINALE, TOUT EN .png) ----------
 const PHOTOS = [
-  { id: 1,  heroUrl: "img/justine-animé.png",      realUrl: "img/justine-original.jpg",      answer: "justine" },
+  { id: 1,  heroUrl: "justine-animé.png",      realUrl: "img/justine-original.jpg",      answer: "justine" },
   { id: 2,  heroUrl: "img/alix-anime.png",         realUrl: "img/alix-original.png",         answer: "" },
   { id: 3,  heroUrl: "img/yannaelle-anime.png",    realUrl: "img/yannaelle-original.png",    answer: "" },
   { id: 4,  heroUrl: "img/anita-anime.png",        realUrl: "img/anita-original.png",        answer: "" },
