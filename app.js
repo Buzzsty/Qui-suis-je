@@ -65,7 +65,7 @@ const PHOTOS = [
   { id: 27, heroUrl: "img/anita-animé.png",        realUrl: "img/anita-original.JPG",        answer: "anita" },
   { id: 28, heroUrl: "img/marion-animé.png",       realUrl: "img/marion-original.jpg",       answer: "marion" },
   { id: 29, heroUrl: "img/audrey-animé.png",       realUrl: "img/audrey-original.jpg",       answer: "audrey" },
-  { id: 30, heroUrl: "img/loic-animé.png",         realUrl: "img/loic-original.jpg",         answer: "loic" },
+  { id: 30, heroUrl: "img/loïc-animé.png",         realUrl: "img/loïc-original.jpg",         answer: "loïc" },
   { id: 31, heroUrl: "img/valentin-animé.png",     realUrl: "img/valentin-original.jpg",     answer: "valentin" },
   { id: 32, heroUrl: "img/pauline-animé.png",      realUrl: "img/pauline-original.jpg",      answer: "pauline" },
   { id: 33, heroUrl: "img/shirley-animé.png",      realUrl: "img/shirley-original.jpg",      answer: "shirley" }
