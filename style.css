@@ -1,157 +1,312 @@
+/* ====== GLOBAL ====== */
+
 * {
   box-sizing: border-box;
-}
-
-body {
-  margin: 0;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background: #0b1020;
-  color: #f5f5f5;
 }
 
-.app {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 16px;
+html, body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
 }
 
-h1, h2, h3 {
-  text-align: center;
+/* Fond d'écran assombri */
+body {
+  background: url("img/background.jpg") no-repeat center center fixed;
+  background-size: cover;
+  position: relative;
+  color: #f9fafb;
 }
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: -1;
+}
+
+/* ====== ÉCRANS ====== */
 
 .screen {
-  display: block;
+  max-width: 900px;
+  margin: 30px auto;
+  padding: 24px 20px;
+  background: rgba(15, 23, 42, 0.9); /* bleu nuit quasi opaque */
+  border-radius: 16px;
+  box-shadow: 0 0 24px rgba(0, 0, 0, 0.5);
 }
 
 .hidden {
   display: none;
 }
 
+/* Titres */
+
+h1, h2, h3 {
+  text-align: center;
+  margin-top: 0;
+  margin-bottom: 12px;
+}
+
+h1 {
+  font-size: 2rem;
+}
+
+h2 {
+  font-size: 1.6rem;
+}
+
+h3 {
+  font-size: 1.2rem;
+}
+
+/* Paragraphes */
+p {
+  margin-top: 0;
+  margin-bottom: 12px;
+}
+
+/* ====== FORMULAIRES (inputs + boutons) ====== */
+
 input[type="text"],
 input[type="password"] {
   width: 100%;
-  padding: 10px;
-  margin: 8px 0 16px;
-  border-radius: 6px;
-  border: 1px solid #444;
-  background: #151b2c;
-  color: #f5f5f5;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 2px solid #4b5563;
+  background-color: #020617;
+  color: #f9fafb;
+  margin-bottom: 10px;
+  font-size: 1rem;
+}
+
+input::placeholder {
+  color: #9ca3af;
 }
 
 button {
-  display: inline-block;
-  padding: 10px 16px;
-  border-radius: 6px;
+  background-color: #f97373;   /* rouge doux */
   border: none;
+  padding: 10px 18px;
+  border-radius: 10px;
+  color: #111827;
+  font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  background: #ff4757;
-  color: #fff;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.4);
+  transition: transform 0.1s ease, box-shadow 0.1s ease, background-color 0.2s ease;
 }
 
-button.secondary {
-  background: #2f3542;
-}
-
-button.link-button {
-  background: transparent;
-  color: #70a1ff;
-  box-shadow: none;
-  padding: 0;
+button:hover {
+  background-color: #fb7171;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+  transform: translateY(-1px);
 }
 
 button:active {
-  transform: translateY(1px);
+  transform: translateY(0);
+  box-shadow: none;
 }
+
+/* Bouton retour */
+#back-to-menu-button,
+#admin-back-button {
+  background-color: #f97373;
+  color: #111827;
+  margin-bottom: 12px;
+}
+
+/* ====== ÉCRAN LOGIN ====== */
+
+#login-screen {
+  text-align: center;
+}
+
+#login-screen input {
+  margin-top: 6px;
+}
+
+/* ====== MENU / GRILLE DES PHOTOS ====== */
 
 .menu-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   margin-bottom: 16px;
+}
+
+#player-name-display {
+  font-weight: 700;
+  color: #facc15;
 }
 
 .photo-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
-  gap: 8px;
-  margin: 16px 0;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 10px;
+  margin-top: 16px;
 }
 
+/* Bouton numéro de photo */
 .photo-button {
-  padding: 8px;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  background: #1e272e;
-  color: #f5f5f5;
+  padding: 12px 0;
+  font-size: 1.1rem;
+  background: #020617;
+  border-radius: 10px;
+  border: 2px solid #4b5563;
+  color: #e5e7eb;
+}
+
+.photo-button:hover {
+  border-color: #f97373;
+}
+
+/* Bouton déjà répondu */
+.photo-button.answered {
+  background: #16a34a;
+  border-color: #22c55e;
+  color: #f9fafb;
+}
+
+/* Bouton mode organisateur */
+.admin-shortcut {
+  margin-top: 24px;
+  text-align: center;
+}
+
+/* ====== ÉCRAN DEVINETTE : 2 IMAGES + RÉPONSE ====== */
+
+/* Conteneur des 2 photos + réponse au milieu */
+.photo-container {
+  display: grid;
+  grid-template-columns: 1fr minmax(220px, 260px) 1fr; /* gauche / centre / droite */
+  gap: 16px;
+  align-items: flex-start;
+  max-width: 1200px;
+  margin: 20px auto;
+}
+
+/* Colonnes images (gauche / droite) */
+.photo-column {
+  text-align: center;
+}
+
+/* Images : on limite la taille à la moitié de la hauteur de l'écran */
+.photo-column img {
+  width: 100%;
+  height: auto;
+  max-height: 50vh;            /* clé pour éviter de scroller */
+  object-fit: contain;
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+/* Colonne centrale avec la réponse */
+.answer-column {
+  display: flex;
+  align-items: center;
+}
+
+.answer-block {
+  width: 100%;
+}
+
+.answer-block label {
+  display: block;
+  margin-bottom: 6px;
   font-weight: 600;
 }
 
-.photo-button.answered {
-  background: #2ed573;
-  color: #0b1020;
-}
-
-.photos-container {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin: 16px 0;
-}
-
-.photo-block img {
-  width: 100%;
-  max-height: 260px;
-  object-fit: cover;
-  border-radius: 12px;
-  border: 2px solid #2f3542;
-}
-
-@media (min-width: 740px) {
-  .photos-container {
-    flex-direction: row;
-  }
-  .photo-block {
-    flex: 1;
-  }
+.answer-block input {
+  margin-bottom: 8px;
 }
 
 .status-message {
-  font-size: 0.9rem;
-  margin-top: 8px;
-  min-height: 1.2em;
+  margin-top: 4px;
+  text-align: center;
+  font-weight: 600;
 }
 
 .status-message.ok {
-  color: #2ed573;
+  color: #22c55e;
 }
 
 .status-message.error {
-  color: #ff6b81;
+  color: #f97373;
 }
 
-.admin-link {
-  text-align: center;
-  margin-top: 16px;
+/* ====== ÉCRAN ORGANISATEUR ====== */
+
+#admin-screen input {
+  margin-bottom: 8px;
 }
 
 #ranking-table {
   width: 100%;
   border-collapse: collapse;
-  margin-bottom: 16px;
+  margin-top: 12px;
+  font-size: 0.95rem;
 }
 
 #ranking-table th,
 #ranking-table td {
-  border: 1px solid #2f3542;
+  border-bottom: 1px solid #374151;
   padding: 6px 8px;
-  font-size: 0.9rem;
+  text-align: left;
+}
+
+#ranking-table th {
+  background-color: #020617;
 }
 
 #answers-detail {
-  font-size: 0.9rem;
-  line-height: 1.4;
+  margin-top: 16px;
+  font-size: 0.95rem;
+}
+
+#answers-detail h4 {
+  margin-bottom: 6px;
+}
+
+#answers-detail ul {
+  margin-top: 0;
+  padding-left: 18px;
+}
+
+/* ====== RESPONSIVE ====== */
+
+@media (max-width: 900px) {
+  .screen {
+    margin: 16px;
+    padding: 18px 14px;
+  }
+
+  .menu-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .photo-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .photo-container {
+    grid-template-columns: 1fr;
+  }
+
+  .answer-column {
+    order: 3;           /* réponse en-dessous des images sur mobile */
+  }
+}
+
+@media (max-width: 500px) {
+  .photo-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  button {
+    font-size: 0.95rem;
+  }
 }
