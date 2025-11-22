@@ -58,7 +58,7 @@ const PHOTOS = [
   { id: 20, heroUrl: "img/cindy-animé.png",        realUrl: "img/cindy-original.jpg",        answer: "cindy" },
   { id: 21, heroUrl: "img/nicolas-animé.png",      realUrl: "img/nicolas-original.jpg",      answer: "nicolas" },
   { id: 22, heroUrl: "img/redha-animé.png",        realUrl: "img/redha-original.jpg",        answer: "redha" },
-  { id: 23, heroUrl: "img/mariej-animé.png",       realUrl: "img/mariej-original.jpg",       answer: "marie" },
+  { id: 23, heroUrl: "img/marie j-animé.png",       realUrl: "img/marie j-original.jpg",       answer: "marie" },
   { id: 24, heroUrl: "img/emily-animé.png",        realUrl: "img/emily-original.jpg",        answer: "emily" },
   { id: 25, heroUrl: "img/sylvain-animé.png",      realUrl: "img/sylvain-original.jpg",      answer: "sylvain" },
   { id: 26, heroUrl: "img/pierre-louis-animé.png", realUrl: "img/pierre-louis-original.jpg", answer: "pierre-louis" },
