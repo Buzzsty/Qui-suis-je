@@ -31,10 +31,10 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 // ---------- CONFIG DU JEU ----------
-const PHOTO_COUNT = 33;           // 33 personnes
-const ADMIN_CODE = "1234";        // à changer
+const PHOTO_COUNT = 33;           
+const ADMIN_CODE = "1234";        
 
-// ---------- LISTE DES PHOTOS (ANIME + ORIGINALE, TOUT EN .png) ----------
+// ---------- LISTE DES PHOTOS ----------
 const PHOTOS = [
   { id: 1,  heroUrl: "img/megane-animé.png",       realUrl: "img/megane-original.jpg",       answer: "megane" },
   { id: 2,  heroUrl: "img/alex-animé.png",         realUrl: "img/alex-original.jpg",         answer: "alex" },
@@ -58,7 +58,7 @@ const PHOTOS = [
   { id: 20, heroUrl: "img/cindy-animé.png",        realUrl: "img/cindy-original.jpg",        answer: "cindy" },
   { id: 21, heroUrl: "img/nicolas-animé.png",      realUrl: "img/nicolas-original.jpg",      answer: "nicolas" },
   { id: 22, heroUrl: "img/redha-animé.png",        realUrl: "img/redha-original.jpg",        answer: "redha" },
-  { id: 23, heroUrl: "img/marie j-animé.png",       realUrl: "img/marie j-original.jpg",       answer: "marie" },
+  { id: 23, heroUrl: "img/marie j-animé.png",      realUrl: "img/marie j-original.jpg",      answer: "marie" },
   { id: 24, heroUrl: "img/emily-animé.png",        realUrl: "img/emily-original.jpg",        answer: "emily" },
   { id: 25, heroUrl: "img/sylvain-animé.png",      realUrl: "img/sylvain-original.jpg",      answer: "sylvain" },
   { id: 26, heroUrl: "img/pierre-louis-animé.png", realUrl: "img/pierre-louis-original.jpg", answer: "pierre-louis" },
@@ -69,15 +69,23 @@ const PHOTOS = [
   { id: 31, heroUrl: "img/valentin-animé.png",     realUrl: "img/valentin-original.jpg",     answer: "valentin" },
   { id: 32, heroUrl: "img/pauline-animé.png",      realUrl: "img/pauline-original.jpg",      answer: "pauline" },
   { id: 33, heroUrl: "img/shirley-animé.png",      realUrl: "img/shirley-original.jpg",      answer: "shirley" }
-  ];
+];
+
+// ----------------------------------------------------------
+// NORMALISATION : SUPPRESSION ACCENTS + MINUSCULE + ESPACES
+// ----------------------------------------------------------
+function normalize(str) {
+  return (str || "")
+    .normalize("NFD")                
+    .replace(/[\u0300-\u036f]/g, "") 
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, " ");
+}
 
 // ---------- OUTILS ----------
 function slugifyName(name) {
   return name.trim().toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
-}
-
-function normalize(str) {
-  return (str || "").trim().toLowerCase().replace(/\s+/g, " ");
 }
 
 function showScreen(id) {
@@ -87,14 +95,12 @@ function showScreen(id) {
 
 // ---------- API FIRESTORE ----------
 
-// Création / connexion joueur AVEC code
 async function ensurePlayer(name, code) {
   const id = slugifyName(name);
   const ref = doc(db, "players", id);
   const snap = await getDoc(ref);
 
   if (!snap.exists()) {
-    // 1ère connexion : création joueur avec code
     await setDoc(ref, {
       id,
       name,
@@ -106,16 +112,12 @@ async function ensurePlayer(name, code) {
 
   const data = snap.data();
 
-  // Ancien joueur sans code -> on enregistre celui entré
   if (!data.code) {
     await setDoc(ref, { ...data, code }, { merge: true });
     return { id, name: data.name };
   }
 
-  // Joueur avec code -> on vérifie
-  if (data.code !== code) {
-    throw new Error("INVALID_CODE");
-  }
+  if (data.code !== code) throw new Error("INVALID_CODE");
 
   return { id, name: data.name };
 }
@@ -171,29 +173,19 @@ const answersDetailDiv = document.getElementById("answers-detail");
 let currentPlayer = null;
 let currentPhotoId = null;
 
-// ---------- LOGIQUE UTILISATEUR ----------
+// ---------- LOGIN ----------
 loginButton.addEventListener("click", async () => {
   const name = playerNameInput.value.trim();
   const code = playerCodeInput.value.trim();
 
-  if (!name) {
-    alert("Merci d'entrer un nom");
-    return;
-  }
-  if (!code) {
-    alert("Merci d'entrer ton code joueur");
-    return;
-  }
+  if (!name) return alert("Merci d'entrer un nom");
+  if (!code) return alert("Merci d'entrer ton code joueur");
 
   try {
     currentPlayer = await ensurePlayer(name, code);
   } catch (e) {
-    console.error("Erreur login:", e);
-    if (e.message === "INVALID_CODE") {
-      alert("Code incorrect pour ce joueur.");
-    } else {
-      alert("Erreur de connexion au jeu : " + e.message);
-    }
+    if (e.message === "INVALID_CODE") alert("Code incorrect pour ce joueur.");
+    else alert("Erreur de connexion : " + e.message);
     return;
   }
 
@@ -202,6 +194,7 @@ loginButton.addEventListener("click", async () => {
   showScreen("menu-screen");
 });
 
+// ---------- AFFICHER GRILLE ----------
 async function renderPhotoGrid() {
   photoGrid.innerHTML = "";
   const guesses = await loadAllGuesses();
@@ -220,6 +213,7 @@ async function renderPhotoGrid() {
   });
 }
 
+// ---------- OUVERTURE PHOTO ----------
 async function openPhoto(id) {
   currentPhotoId = id;
   const p = PHOTOS.find(x => x.id === id);
@@ -235,6 +229,7 @@ async function openPhoto(id) {
   showScreen("guess-screen");
 }
 
+// ---------- ENREGISTREMENT RÉPONSE ----------
 saveAnswerButton.addEventListener("click", async () => {
   const ans = answerInput.value.trim();
   saveStatus.textContent = "Enregistrement...";
@@ -260,7 +255,6 @@ adminBackButton.addEventListener("click", () => showScreen("menu-screen"));
 adminLoginButton.addEventListener("click", async () => {
   if (adminCodeInput.value !== ADMIN_CODE) {
     adminLoginStatus.textContent = "Code organisateur incorrect.";
-    adminLoginStatus.classList.add("error");
     return;
   }
 
@@ -270,6 +264,7 @@ adminLoginButton.addEventListener("click", async () => {
   adminResultsArea.classList.remove("hidden");
 });
 
+// ---------- CLASSEMENT ----------
 function buildRanking(guesses) {
   const correctMap = new Map();
   PHOTOS.forEach(p => {
